@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Wikipedia Search</title>
+</head>
+<body>
+<h1>Wikipedia Search</h1>
+<form action="#" th:action="@{/search}" th:object="${searchForm}" method="post">
+    <input type="text" th:field="*{query}" placeholder="Enter a word" />
+    <button type="submit">Search</button>
+</form>
+<div th:if="${result}">
+    <h2>Result:</h2>
+    <p th:text="${result}"></p>
+</div>
+</body>
+</html>
