@@ -3,7 +3,7 @@ Java-based website that uses web-semantics to address information to a Neo4J gra
 
 The main technologies for this project are:
     - Java
-    - Spring Boot (Spring Web)
+    - Spring Boot (Spring Web/MVC)
     - Neo4J / Cypher Query Language (CQL)
     - HTML + CSS
 
