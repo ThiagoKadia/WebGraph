@@ -9,16 +9,31 @@
             font-family: Arial, sans-serif;
         }
         #graph {
-            width: 60%;
+            width: 100%;
             height: 100vh;
             overflow: hidden;
+            transition: width 0.5s;
         }
         #info {
-            width: 40%;
+            width: 0;
             height: 100vh;
             overflow-y: auto;
             padding: 20px;
             border-left: 1px solid #ccc;
+            transition: width 0.5s, opacity 0.5s;
+            opacity: 0;
+        }
+        #info.active {
+            width: 40%;
+            opacity: 1;
+        }
+        #close-btn {
+            display: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        #info.active #close-btn {
+            display: block;
         }
         .node {
             stroke: #fff;
@@ -33,11 +48,16 @@
             font-size: 12px;
             pointer-events: none;
         }
+        .selected {
+            stroke: lightskyblue;
+            stroke-width: -3px;
+        }
     </style>
 </head>
 <body>
 <div id="graph"></div>
 <div id="info">
+    <button id="close-btn">Close</button>
     <h2>Node Information</h2>
     <div id="wiki-content">Click on a node to see Wikipedia content.</div>
 </div>
@@ -96,7 +116,7 @@
                     .on("start", dragstarted)
                     .on("drag", dragged)
                     .on("end", dragended))
-                .on("click", nodeClicked); // Adiciona evento de clique
+                .on("click", nodeClicked);
 
             const nodeText = svg.append("g")
                 .attr("class", "node-text")
@@ -107,7 +127,7 @@
                 .attr("class", "node-label")
                 .attr("dy", ".35em")
                 .attr("text-anchor", "middle")
-                .text(d => d.name || d.title || d.id); // Exibe apenas o valor da propriedade
+                .text(d => d.name || d.title || d.id);
 
             simulation
                 .nodes(nodes)
@@ -115,6 +135,8 @@
 
             simulation.force("link")
                 .links(links);
+
+            let selectedNode = null;
 
             function ticked() {
                 link
@@ -154,10 +176,21 @@
             }
 
             function nodeClicked(event, d) {
+                // Remove o destaque do nó previamente selecionado
+                if (selectedNode) {
+                    selectedNode.classed("selected", false);
+                }
+
+                // Adiciona destaque ao nó clicado
+                selectedNode = d3.select(this).classed("selected", true);
+
                 // Mover o grafo para a esquerda
                 svg.transition()
                     .duration(500)
                     .attr("transform", `translate(${-width / 4}, 0)`);
+
+                // Ativar a seção de informações
+                document.getElementById('info').classList.add('active');
 
                 // Buscar conteúdo da Wikipedia para o nó clicado
                 fetchWikipediaContent(d.name || d.title || d.id);
@@ -174,6 +207,22 @@
                         console.error('Error fetching Wikipedia content:', error);
                     });
             }
+
+            document.getElementById('close-btn').addEventListener('click', () => {
+                // Restaurar o grafo para ocupar a página inteira
+                svg.transition()
+                    .duration(500)
+                    .attr("transform", `translate(0, 0)`);
+
+                // Desativar a seção de informações
+                document.getElementById('info').classList.remove('active');
+
+                // Remove o destaque do nó selecionado
+                if (selectedNode) {
+                    selectedNode.classed("selected", false);
+                    selectedNode = null;
+                }
+            });
         });
 </script>
 </body>
