@@ -55,175 +55,169 @@
     </style>
 </head>
 <body>
-<div id="graph"></div>
-<div id="info">
-    <button id="close-btn">Close</button>
-    <h2>Node Information</h2>
-    <div id="wiki-content">Click on a node to see Wikipedia content.</div>
-</div>
-<script>
-    fetch('/api/graph')
-        .then(response => response.json())
-        .then(data => {
-            const nodes = Array.from(data.nodes).map(d => ({ id: d.id, labels: d.labels, ...d }));
-            const links = Array.from(data.edges).map(d => ({ source: d.startNode, target: d.endNode, type: d.type, ...d }));
+    <div id="graph"></div>
+    <div id="info">
+        <button id="close-btn">Close</button>
+        <h2>Node Information</h2>
+        <div id="wiki-content">Click on a node to see Wikipedia content.</div>
+    </div>
+    <script>
+        fetch('/api/graph')
+            .then(response => response.json())
+            .then(data => {
+                const nodes = Array.from(data.nodes).map(d => ({ id: d.id, labels: d.labels, ...d }));
+                const links = Array.from(data.edges).map(d => ({ source: d.startNode, target: d.endNode, type: d.type, ...d }));
 
-            const width = document.getElementById('graph').clientWidth;
-            const height = document.getElementById('graph').clientHeight;
+                const width = document.getElementById('graph').clientWidth;
+                const height = document.getElementById('graph').clientHeight;
 
-            const svg = d3.select("#graph")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height);
+                const svg = d3.select("#graph")
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .call(d3.zoom().on("zoom", function (event) {
+                        svg.attr("transform", event.transform);
+                    }))
+                    .append("g");
 
-            const color = d3.scaleOrdinal(d3.schemeCategory10);
+                const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-            const simulation = d3.forceSimulation(nodes)
-                .force("link", d3.forceLink(links).id(d => d.id).distance(300))
-                .force("charge", d3.forceManyBody().strength(-700))
-                .force("center", d3.forceCenter(width / 2, height / 2));
+                const simulation = d3.forceSimulation(nodes)
+                    .force("link", d3.forceLink(links).id(d => d.id).distance(300))
+                    .force("charge", d3.forceManyBody().strength(-700))
+                    .force("center", d3.forceCenter(width / 2, height / 2));
 
-            const link = svg.append("g")
-                .attr("class", "links")
-                .selectAll("line")
-                .data(links)
-                .enter()
-                .append("line")
-                .attr("class", "link")
-                .style("stroke-width", 2);
+                const link = svg.append("g")
+                    .attr("class", "links")
+                    .selectAll("line")
+                    .data(links)
+                    .enter()
+                    .append("line")
+                    .attr("class", "link")
+                    .style("stroke-width", 2);
 
-            const linkText = svg.append("g")
-                .attr("class", "link-text")
-                .selectAll("text")
-                .data(links)
-                .enter()
-                .append("text")
-                .attr("class", "link-label")
-                .attr("dy", ".35em")
-                .attr("text-anchor", "middle")
-                .text(d => d.type);
+                const linkText = svg.append("g")
+                    .attr("class", "link-text")
+                    .selectAll("text")
+                    .data(links)
+                    .enter()
+                    .append("text")
+                    .attr("class", "link-label")
+                    .attr("dy", ".35em")
+                    .attr("text-anchor", "middle")
+                    .text(d => d.type);
 
-            const node = svg.append("g")
-                .attr("class", "nodes")
-                .selectAll("circle")
-                .data(nodes)
-                .enter()
-                .append("circle")
-                .attr("class", "node")
-                .attr("r", 15)
-                .style("fill", d => color(d.labels[0]))
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended))
-                .on("click", nodeClicked);
+                const node = svg.append("g")
+                    .attr("class", "nodes")
+                    .selectAll("circle")
+                    .data(nodes)
+                    .enter()
+                    .append("circle")
+                    .attr("class", "node")
+                    .attr("r", 15)
+                    .style("fill", d => color(d.labels[0]))
+                    .call(d3.drag()
+                        .on("start", dragstarted)
+                        .on("drag", dragged)
+                        .on("end", dragended))
+                    .on("click", nodeClicked);
 
-            const nodeText = svg.append("g")
-                .attr("class", "node-text")
-                .selectAll("text")
-                .data(nodes)
-                .enter()
-                .append("text")
-                .attr("class", "node-label")
-                .attr("dy", ".35em")
-                .attr("text-anchor", "middle")
-                .text(d => d.name || d.title || d.id);
+                const nodeText = svg.append("g")
+                    .attr("class", "node-text")
+                    .selectAll("text")
+                    .data(nodes)
+                    .enter()
+                    .append("text")
+                    .attr("class", "node-label")
+                    .attr("dy", ".35em")
+                    .attr("text-anchor", "middle")
+                    .text(d => d.name || d.title || d.id);
 
-            simulation
-                .nodes(nodes)
-                .on("tick", ticked);
+                simulation
+                    .nodes(nodes)
+                    .on("tick", ticked);
 
-            simulation.force("link")
-                .links(links);
+                simulation.force("link")
+                    .links(links);
 
-            let selectedNode = null;
+                let selectedNode = null;
 
-            function ticked() {
-                link
-                    .attr("x1", d => d.source.x)
-                    .attr("y1", d => d.source.y)
-                    .attr("x2", d => d.target.x)
-                    .attr("y2", d => d.target.y);
+                function ticked() {
+                    link
+                        .attr("x1", d => d.source.x)
+                        .attr("y1", d => d.source.y)
+                        .attr("x2", d => d.target.x)
+                        .attr("y2", d => d.target.y);
 
-                linkText
-                    .attr("x", d => (d.source.x + d.target.x) / 2)
-                    .attr("y", d => (d.source.y + d.target.y) / 2);
+                    linkText
+                        .attr("x", d => (d.source.x + d.target.x) / 2)
+                        .attr("y", d => (d.source.y + d.target.y) / 2);
 
-                node
-                    .attr("cx", d => d.x)
-                    .attr("cy", d => d.y);
+                    node
+                        .attr("cx", d => d.x)
+                        .attr("cy", d => d.y);
 
-                nodeText
-                    .attr("x", d => d.x)
-                    .attr("y", d => d.y);
-            }
-
-            function dragstarted(event, d) {
-                if (!event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            }
-
-            function dragged(event, d) {
-                d.fx = event.x;
-                d.fy = event.y;
-            }
-
-            function dragended(event, d) {
-                if (!event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
-            }
-
-            function nodeClicked(event, d) {
-                // Remove o destaque do nó previamente selecionado
-                if (selectedNode) {
-                    selectedNode.classed("selected", false);
+                    nodeText
+                        .attr("x", d => d.x)
+                        .attr("y", d => d.y);
                 }
 
-                // Adiciona destaque ao nó clicado
-                selectedNode = d3.select(this).classed("selected", true);
-
-                // Mover o grafo para a esquerda
-                svg.transition()
-                    .duration(500)
-                    .attr("transform", `translate(${-width / 4}, 0)`);
-
-                // Ativar a seção de informações
-                document.getElementById('info').classList.add('active');
-
-                // Buscar conteúdo da Wikipedia para o nó clicado
-                fetchWikipediaContent(d.name || d.title || d.id);
-            }
-
-            function fetchWikipediaContent(query) {
-                fetch(`/search?query=${query}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('wiki-content').innerHTML = data.extract || "No content found.";
-                    })
-                    .catch(error => {
-                        document.getElementById('wiki-content').innerHTML = "Error fetching Wikipedia content.";
-                        console.error('Error fetching Wikipedia content:', error);
-                    });
-            }
-
-            document.getElementById('close-btn').addEventListener('click', () => {
-                // Restaurar o grafo para ocupar a página inteira
-                svg.transition()
-                    .duration(500)
-                    .attr("transform", `translate(0, 0)`);
-
-                // Desativar a seção de informações
-                document.getElementById('info').classList.remove('active');
-
-                // Remove o destaque do nó selecionado
-                if (selectedNode) {
-                    selectedNode.classed("selected", false);
-                    selectedNode = null;
+                function dragstarted(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
                 }
+
+                function dragged(event, d) {
+                    d.fx = event.x;
+                    d.fy = event.y;
+                }
+
+                function dragended(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    d.fx = null;
+                    d.fy = null;
+                }
+
+                function nodeClicked(event, d) {
+                    if (selectedNode) {
+                        selectedNode.classed("selected", false);
+                    }
+                    selectedNode = d3.select(this).classed("selected", true);
+
+                    svg.transition()
+                        .duration(500)
+                        .attr("transform", `translate(${-width / 4}, 0)`);
+
+                    document.getElementById('info').classList.add('active');
+                    fetchWikipediaContent(d.name || d.title || d.id);
+                }
+
+                function fetchWikipediaContent(query) {
+                    fetch(`/search?query=${query}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('wiki-content').innerHTML = data.extract || "No content found.";
+                        })
+                        .catch(error => {
+                            document.getElementById('wiki-content').innerHTML = "Error fetching Wikipedia content.";
+                            console.error('Error fetching Wikipedia content:', error);
+                        });
+                }
+
+                document.getElementById('close-btn').addEventListener('click', () => {
+                    svg.transition()
+                        .duration(500)
+                        .attr("transform", `translate(0, 0)`);
+
+                    document.getElementById('info').classList.remove('active');
+
+                    if (selectedNode) {
+                        selectedNode.classed("selected", false);
+                        selectedNode = null;
+                    }
+                });
             });
-        });
-</script>
+    </script>
 </body>
 </html>
