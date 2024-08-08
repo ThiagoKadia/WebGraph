@@ -52,10 +52,59 @@
             stroke: lightskyblue;
             stroke-width: -3px;
         }
+        #panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 25px; /* Altura inicial do painel */
+            background-color: #333;
+            color: white;
+            text-align: center;
+            line-height: 50px; /* Centralizar o texto verticalmente */
+            transition: height 0.3s ease-in-out;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        #panel.expanded {
+            height: 100px; /* Altura quando expandido */
+        }
+
+        #content {
+            padding-top: 50px; /* Espaço para o painel */
+            text-align: center;
+        }
+
+        .panel-button {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #333;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #panel.expanded .panel-button {
+            display: inline-block;
+        }
+
+        .panel-button:hover {
+            background-color: #ddd;
+        }
     </style>
 </head>
 <body>
-    <div id="graph"></div>
+    <div id="graph">
+        <div id="panel">
+            Sei lá
+            <button class="panel-button" id="redButton">Ir para Vermelho</button>
+            <button class="panel-button" id="blueButton">Ir para Azul</button>
+        </div>
+    </div>
     <div id="info">
         <button id="close-btn">Close</button>
         <h2>Node Information</h2>
@@ -217,7 +266,43 @@
                         selectedNode = null;
                     }
                 });
+            })
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const panel = document.getElementById('panel');
+            const redButton = document.getElementById('redButton');
+            const blueButton = document.getElementById('blueButton');
+            let isPanelOpen = false;
+
+            panel.addEventListener('mouseenter', function () {
+                if (!isPanelOpen) {
+                    panel.classList.add('expanded');
+                }
             });
+
+            panel.addEventListener('mouseleave', function () {
+                if (!isPanelOpen) {
+                    panel.classList.remove('expanded');
+                }
+            });
+
+            panel.addEventListener('click', function () {
+                isPanelOpen = !isPanelOpen;
+                if (isPanelOpen) {
+                    panel.classList.add('expanded');
+                } else {
+                    panel.classList.remove('expanded');
+                }
+            });
+
+            redButton.addEventListener('click', function () {
+                window.location.href = 'vermelho.html';
+            });
+
+            blueButton.addEventListener('click', function () {
+                window.location.href = 'azul.html';
+            });
+        });
     </script>
 </body>
 </html>
