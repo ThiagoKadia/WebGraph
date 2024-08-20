@@ -115,7 +115,9 @@
 
             svg.call(zoom);
 
-            const color = d3.scaleOrdinal(d3.schemeCategory10);
+            const color = d3.scaleOrdinal()
+                .domain(nodes.map(d => d.labels[0])) // Mapear os labels dos nós
+                .range(["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC"]);
 
             const simulation = d3.forceSimulation(nodes)
                 .force("link", d3.forceLink(links).id(d => d.id).distance(300))
@@ -139,7 +141,7 @@
                 .enter()
                 .append("text")
                 .attr("class", "link-label")
-                .attr("dy", ".35em")
+                .attr("dy", (d, i) => i % 2 === 0 ? "-0.6em" : "1.2em") // Alterna entre acima e abaixo da linha
                 .attr("text-anchor", "middle")
                 .text(d => d.type);
 
@@ -194,7 +196,8 @@
                     .attr("y", d => (d.source.y + d.target.y) / 2)
                     .attr("transform", d => {
                         const angle = calculateAngle(d.source.x, d.source.y, d.target.x, d.target.y);
-                        return `rotate(${angle}, ${(d.source.x + d.target.x) / 2}, ${(d.source.y + d.target.y) / 2})`;
+                        const correctedAngle = angle > 90 || angle < -90 ? angle + 180 : angle; // Corrige a rotação para evitar texto de ponta cabeça
+                        return `rotate(${correctedAngle}, ${(d.source.x + d.target.x) / 2}, ${(d.source.y + d.target.y) / 2})`;
                     });
 
                 node
