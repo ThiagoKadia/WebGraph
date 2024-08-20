@@ -17,7 +17,7 @@ public class GraphService {
     private Driver driver;
 
     public Map<String, Object> getGraph() {
-        String cypherQuery = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 100";
+        String cypherQuery = "MATCH (n)-[r]->(m) RETURN n, r, m";
         Set<Map<String, Object>> nodes = new HashSet<>();
         Set<Map<String, Object>> edges = new HashSet<>();
 
