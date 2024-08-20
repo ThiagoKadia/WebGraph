@@ -45,180 +45,240 @@
         }
         text {
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: 20px;
             pointer-events: none;
         }
         .selected {
             stroke: lightskyblue;
-            stroke-width: -5px;
+            stroke-width: 3px;
+        }
+
+        #search-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #search-input {
+            padding: 5px;
+            width: 70%;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        #search-btn {
+            padding: 5px 10px;
+            border: none;
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+
+        #search-btn:hover {
+            background-color: #555;
         }
     </style>
 </head>
 <body>
-    <div id="graph"></div>
-    <div id="info">
-        <button id="close-btn">Close</button>
-        <h2>Node Information</h2>
-        <div id="wiki-content">Click on a node to see Wikipedia content.</div>
+<div id="graph">
+    <div id="search-container">
+        <input type="text" id="search-input" placeholder="Search for a node...">
+        <button id="search-btn">Search</button>
     </div>
-    <script>
-        fetch('/api/graph')
-            .then(response => response.json())
-            .then(data => {
-                const nodes = Array.from(data.nodes).map(d => ({ id: d.id, labels: d.labels, ...d }));
-                const links = Array.from(data.edges).map(d => ({ source: d.startNode, target: d.endNode, type: d.type, ...d }));
+</div>
+<div id="info">
+    <button id="close-btn">Close</button>
+    <h2>Node Information</h2>
+    <div id="wiki-content">Click on a node to see Wikipedia content.</div>
+</div>
+<script>
+    fetch('/api/graph')
+        .then(response => response.json())
+        .then(data => {
+            const nodes = Array.from(data.nodes).map(d => ({ id: d.id, labels: d.labels, ...d }));
+            const links = Array.from(data.edges).map(d => ({ source: d.startNode, target: d.endNode, type: d.type, ...d }));
 
-                const width = document.getElementById('graph').clientWidth;
-                const height = document.getElementById('graph').clientHeight;
+            const width = document.getElementById('graph').clientWidth;
+            const height = document.getElementById('graph').clientHeight;
 
-                const svg = d3.select("#graph")
-                    .append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-                    .call(d3.zoom().on("zoom", function (event) {
-                        svg.attr("transform", event.transform);
-                    }))
-                    .append("g");
+            const svg = d3.select("#graph")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
 
-                const color = d3.scaleOrdinal(d3.schemeCategory10);
+            const g = svg.append("g");
 
-                const simulation = d3.forceSimulation(nodes)
-                    .force("link", d3.forceLink(links).id(d => d.id).distance(300))
-                    .force("charge", d3.forceManyBody().strength(-700))
-                    .force("center", d3.forceCenter(width / 2, height / 2))
-                    .force("collision", d3.forceCollide().radius(30)); // Adiciona força de colisão
-
-                const link = svg.append("g")
-                    .attr("class", "links")
-                    .selectAll("line")
-                    .data(links)
-                    .enter()
-                    .append("line")
-                    .attr("class", "link")
-                    .style("stroke-width", 2);
-
-                const linkText = svg.append("g")
-                    .attr("class", "link-text")
-                    .selectAll("text")
-                    .data(links)
-                    .enter()
-                    .append("text")
-                    .attr("class", "link-label")
-                    .attr("dy", ".35em")
-                    .attr("text-anchor", "middle")
-                    .text(d => d.type);
-
-                const node = svg.append("g")
-                    .attr("class", "nodes")
-                    .selectAll("circle")
-                    .data(nodes)
-                    .enter()
-                    .append("circle")
-                    .attr("class", "node")
-                    .attr("r", 15)
-                    .style("fill", d => color(d.labels[0]))
-                    .call(d3.drag()
-                        .on("start", dragstarted)
-                        .on("drag", dragged)
-                        .on("end", dragended))
-                    .on("click", nodeClicked);
-
-                const nodeText = svg.append("g")
-                    .attr("class", "node-text")
-                    .selectAll("text")
-                    .data(nodes)
-                    .enter()
-                    .append("text")
-                    .attr("class", "node-label")
-                    .attr("dy", ".35em")
-                    .attr("text-anchor", "middle")
-                    .text(d => d.name || d.title || d.id);
-
-                simulation
-                    .nodes(nodes)
-                    .on("tick", ticked);
-
-                simulation.force("link")
-                    .links(links);
-
-                let selectedNode = null;
-
-                function ticked() {
-                    link
-                        .attr("x1", d => d.source.x)
-                        .attr("y1", d => d.source.y)
-                        .attr("x2", d => d.target.x)
-                        .attr("y2", d => d.target.y);
-
-                    linkText
-                        .attr("x", d => (d.source.x + d.target.x) / 2)
-                        .attr("y", d => (d.source.y + d.target.y) / 2);
-
-                    node
-                        .attr("cx", d => d.x)
-                        .attr("cy", d => d.y);
-
-                    nodeText
-                        .attr("x", d => d.x)
-                        .attr("y", d => d.y);
-                }
-
-                function dragstarted(event, d) {
-                    if (!event.active) simulation.alphaTarget(0.3).restart();
-                    d.fx = d.x;
-                    d.fy = d.y;
-                }
-
-                function dragged(event, d) {
-                    d.fx = event.x;
-                    d.fy = event.y;
-                }
-
-                function dragended(event, d) {
-                    if (!event.active) simulation.alphaTarget(0);
-                    d.fx = d.x;
-                    d.fy = d.y;
-                }
-
-                function nodeClicked(event, d) {
-                    if (selectedNode) {
-                        selectedNode.classed("selected", false);
-                    }
-                    selectedNode = d3.select(this).classed("selected", true);
-
-                    svg.transition()
-                        .duration(500)
-                        .attr("transform", `translate(${-width / 4}, 0)`);
-
-                    document.getElementById('info').classList.add('active');
-                    fetchWikipediaContent(d.name || d.title || d.id);
-                }
-
-                function fetchWikipediaContent(query) {
-                    fetch(`/search?query=${query}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            document.getElementById('wiki-content').innerHTML = data.extract || "No content found.";
-                        })
-                        .catch(error => {
-                            document.getElementById('wiki-content').innerHTML = "Error fetching Wikipedia content.";
-                            console.error('Error fetching Wikipedia content:', error);
-                        });
-                }
-
-                document.getElementById('close-btn').addEventListener('click', () => {
-                    svg.transition()
-                        .duration(500)
-                        .attr("transform", `translate(0, 0)`);
-
-                    document.getElementById('info').classList.remove('active');
-
-                    if (selectedNode) {
-                        selectedNode.classed("selected", false);
-                        selectedNode = null;
-                    }
-                });
+            const zoom = d3.zoom().on("zoom", function (event) {
+                g.attr("transform", event.transform);
             });
-    </script>
+
+            svg.call(zoom);
+
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(300))
+                .force("charge", d3.forceManyBody().strength(-700))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            const link = g.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .data(links)
+                .enter()
+                .append("line")
+                .attr("class", "link")
+                .style("stroke-width", 2);
+
+            const linkText = g.append("g")
+                .attr("class", "link-text")
+                .selectAll("text")
+                .data(links)
+                .enter()
+                .append("text")
+                .attr("class", "link-label")
+                .attr("dy", ".35em")
+                .attr("text-anchor", "middle")
+                .text(d => d.type);
+
+            const node = g.append("g")
+                .attr("class", "nodes")
+                .selectAll("circle")
+                .data(nodes)
+                .enter()
+                .append("circle")
+                .attr("class", "node")
+                .attr("r", 25)
+                .style("fill", d => color(d.labels[0]))
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .on("click", nodeClicked);
+
+            const nodeText = g.append("g")
+                .attr("class", "node-text")
+                .selectAll("text")
+                .data(nodes)
+                .enter()
+                .append("text")
+                .attr("class", "node-label")
+                .attr("dy", ".35em")
+                .attr("text-anchor", "middle")
+                .text(d => d.name || d.title || d.id);
+
+            simulation
+                .nodes(nodes)
+                .on("tick", ticked);
+
+            simulation.force("link")
+                .links(links);
+
+            let selectedNode = null;
+
+            function ticked() {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                linkText
+                    .attr("x", d => (d.source.x + d.target.x) / 2)
+                    .attr("y", d => (d.source.y + d.target.y) / 2);
+
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+
+                nodeText
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y);
+            }
+
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+
+            function nodeClicked(event, d) {
+                if (selectedNode) {
+                    selectedNode.classed("selected", false);
+                }
+                selectedNode = d3.select(this).classed("selected", true);
+
+                svg.transition()
+                    .duration(500)
+                    .call(zoom.transform, d3.zoomIdentity.translate(width / 2 - d.x, height / 2 - d.y).scale(1));
+
+                document.getElementById('info').classList.add('active');
+                fetchWikipediaContent(d.name || d.title || d.id);
+            }
+
+            function fetchWikipediaContent(query) {
+                fetch(`/search?query=${query}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('wiki-content').innerHTML = data.extract || "No content found.";
+                    })
+                    .catch(error => {
+                        document.getElementById('wiki-content').innerHTML = "Error fetching Wikipedia content.";
+                        console.error('Error fetching Wikipedia content:', error);
+                    });
+            }
+
+            document.getElementById('close-btn').addEventListener('click', () => {
+                svg.transition()
+                    .duration(500)
+                    .call(zoom.transform, d3.zoomIdentity);
+
+                document.getElementById('info').classList.remove('active');
+
+                if (selectedNode) {
+                    selectedNode.classed("selected", false);
+                    selectedNode = null;
+                }
+            });
+
+            document.getElementById('search-btn').addEventListener('click', () => {
+                const query = document.getElementById('search-input').value.trim().toLowerCase();
+                if (query) {
+                    const foundNode = nodes.find(d =>
+                        (d.name && d.name.toLowerCase() === query) ||
+                        (d.title && d.title.toLowerCase() === query) ||
+                        d.id.toString() === query
+                    );
+
+                    if (foundNode) {
+                        node.classed("selected", d => d === foundNode);
+
+                        // Centraliza e destaca o nó encontrado
+                        svg.transition()
+                            .duration(500)
+                            .call(zoom.transform, d3.zoomIdentity.translate(width / 2 - foundNode.x, height / 2 - foundNode.y).scale(1));
+
+                        // Abrir o painel de informações e exibir o conteúdo do Wikipedia
+                        document.getElementById('info').classList.add('active');
+                        fetchWikipediaContent(foundNode.name || foundNode.title || foundNode.id);
+                    } else {
+                        alert('Node not found');
+                    }
+                }
+            });
+        });
+</script>
 </body>
 </html>
