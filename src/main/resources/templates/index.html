@@ -50,7 +50,7 @@
         }
         .selected {
             stroke: lightskyblue;
-            stroke-width: -3px;
+            stroke-width: -5px;
         }
     </style>
 </head>
@@ -85,7 +85,8 @@
                 const simulation = d3.forceSimulation(nodes)
                     .force("link", d3.forceLink(links).id(d => d.id).distance(300))
                     .force("charge", d3.forceManyBody().strength(-700))
-                    .force("center", d3.forceCenter(width / 2, height / 2));
+                    .force("center", d3.forceCenter(width / 2, height / 2))
+                    .force("collision", d3.forceCollide().radius(30)); // Adiciona força de colisão
 
                 const link = svg.append("g")
                     .attr("class", "links")
@@ -175,8 +176,8 @@
 
                 function dragended(event, d) {
                     if (!event.active) simulation.alphaTarget(0);
-                    d.fx = null;
-                    d.fy = null;
+                    d.fx = d.x;
+                    d.fy = d.y;
                 }
 
                 function nodeClicked(event, d) {
