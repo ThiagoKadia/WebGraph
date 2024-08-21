@@ -237,7 +237,7 @@
                     .call(zoom.transform, d3.zoomIdentity.translate(width / 2 - d.x, height / 2 - d.y).scale(1));
 
                 document.getElementById('info').classList.add('active');
-                fetchWikipediaContent(d.name || d.title || d.id);
+                fetchWikipediaContent(d.searchText);  // Usar "searchText" para a pesquisa
             }
 
             function fetchWikipediaContent(query) {

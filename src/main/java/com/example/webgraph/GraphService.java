@@ -43,7 +43,8 @@ public class GraphService {
         Map<String, Object> map = new HashMap<>();
         map.put("id", node.id());
         map.put("labels", node.labels());
-        node.asMap().forEach(map::put);
+        map.put("name", node.get("name").asString());  // Continuar usando "name" para exibição
+        map.put("searchText", node.get("searchText").asString());  // Usar "searchText" para a pesquisa
         return map;
     }
 
