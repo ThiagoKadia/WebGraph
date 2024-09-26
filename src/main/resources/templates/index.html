@@ -284,7 +284,7 @@
 
                         // Abrir o painel de informações e exibir o conteúdo do Wikipedia
                         document.getElementById('info').classList.add('active');
-                        fetchWikipediaContent(foundNode.name || foundNode.title || foundNode.id);
+                        fetchWikipediaContent(foundNode.searchText || foundNode.name || foundNode.title || foundNode.id);
                     } else {
                         alert('Node not found');
                     }
