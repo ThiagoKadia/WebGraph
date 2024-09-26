@@ -237,7 +237,7 @@
                     .call(zoom.transform, d3.zoomIdentity.translate(width / 2 - d.x, height / 2 - d.y).scale(1));
 
                 document.getElementById('info').classList.add('active');
-                fetchWikipediaContent(d.name || d.title || d.id);
+                fetchWikipediaContent(d.searchText);  // Usar "searchText" para a pesquisa
             }
 
             function fetchWikipediaContent(query) {
@@ -284,7 +284,7 @@
 
                         // Abrir o painel de informações e exibir o conteúdo do Wikipedia
                         document.getElementById('info').classList.add('active');
-                        fetchWikipediaContent(foundNode.name || foundNode.title || foundNode.id);
+                        fetchWikipediaContent(foundNode.searchText || foundNode.name || foundNode.title || foundNode.id);
                     } else {
                         alert('Node not found');
                     }
