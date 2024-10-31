@@ -116,7 +116,7 @@
     fetch('/api/graph')
         .then(response => response.json())
         .then(data => {
-            const nodes = Array.from(data.nodes).map(d => ({ id: d.id, labels: d.labels, ...d }));
+            const nodes = Array.from(data.nodes).map(d => ({ id: d.id, labels: d.labels, searchText: d.searchText, ...d }));
             const links = Array.from(data.edges).map(d => ({ source: d.startNode, target: d.endNode, type: d.type, ...d }));
 
             const width = document.getElementById('graph').clientWidth;
