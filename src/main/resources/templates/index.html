@@ -45,26 +45,23 @@
         }
         text {
             font-family: Arial, sans-serif;
-            font-size: 20px;
+            font-size: 12px;
             pointer-events: none;
         }
         .selected {
             stroke: lightskyblue;
             stroke-width: 3px;
         }
-
         #search-container {
             margin-top: 10px;
             text-align: center;
         }
-
         #search-input {
             padding: 5px;
-            width: 70%;
+            width: 60%;
             border: 1px solid #ccc;
             border-radius: 3px;
         }
-
         #search-btn {
             padding: 5px 10px;
             border: none;
@@ -74,7 +71,6 @@
             border-radius: 3px;
             margin-left: 5px;
         }
-
         #search-btn:hover {
             background-color: #555;
         }
@@ -90,19 +86,30 @@
             z-index: 1000;
             transition: opacity 0.3s;
         }
+        #search-source {
+            padding: 5px;
+            margin-left: 5px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
 <div id="graph">
     <div id="search-container">
         <input type="text" id="search-input" placeholder="Search for a node...">
+        <select id="search-source">
+            <option value="wikipedia">Wikipedia</option>
+            <option value="dbpedia">DBPedia</option>
+            <option value="google">Google</option>
+        </select>
         <button id="search-btn">Search</button>
     </div>
 </div>
 <div id="info">
     <button id="close-btn">Close</button>
     <h2>Node Information</h2>
-    <div id="wiki-content">Click on a node to see Wikipedia content.</div>
+    <div id="wiki-content">Click on a node to see content.</div>
 </div>
 <div id="tooltip" style="position: absolute; opacity: 0;"></div>
 <script>
@@ -128,9 +135,7 @@
 
             svg.call(zoom);
 
-            const color = d3.scaleOrdinal()
-                .domain(nodes.map(d => d.labels[0])) // Mapear os labels dos nós
-                .range(["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC"]);
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
 
             const simulation = d3.forceSimulation(nodes)
                 .force("link", d3.forceLink(links).id(d => d.id).distance(300))
@@ -172,6 +177,7 @@
                     .on("drag", dragged)
                     .on("end", dragended))
                 .on("click", nodeClicked)
+
                 // Show tooltip on mouseover
                 .on("mouseover", function (event, d) {
                     d3.select("#tooltip")
@@ -189,7 +195,6 @@
                     d3.select("#tooltip")
                         .style("opacity", 0);
                 });
-
 
             const nodeText = g.append("g")
                 .attr("class", "node-text")
@@ -268,18 +273,19 @@
                     .call(zoom.transform, d3.zoomIdentity.translate(width / 2 - d.x, height / 2 - d.y).scale(1));
 
                 document.getElementById('info').classList.add('active');
-                fetchWikipediaContent(d.searchText);  // Usar "searchText" para a pesquisa
+                fetchContent(d.name || d.title || d.id);
             }
 
-            function fetchWikipediaContent(query) {
-                fetch(`/search?query=${query}`)
+            function fetchContent(query) {
+                const source = document.getElementById('search-source').value;
+                fetch(`/search?query=${query}&source=${source}`)
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById('wiki-content').innerHTML = data.extract || "No content found.";
                     })
                     .catch(error => {
-                        document.getElementById('wiki-content').innerHTML = "Error fetching Wikipedia content.";
-                        console.error('Error fetching Wikipedia content:', error);
+                        document.getElementById('wiki-content').innerHTML = "Error fetching content.";
+                        console.error('Error fetching content:', error);
                     });
             }
 
@@ -313,9 +319,9 @@
                             .duration(500)
                             .call(zoom.transform, d3.zoomIdentity.translate(width / 2 - foundNode.x, height / 2 - foundNode.y).scale(1));
 
-                        // Abrir o painel de informações e exibir o conteúdo do Wikipedia
+                        // Abrir o painel de informações e exibir o conteúdo
                         document.getElementById('info').classList.add('active');
-                        fetchWikipediaContent(foundNode.searchText || foundNode.name || foundNode.title || foundNode.id);
+                        fetchContent(foundNode.name || foundNode.title || foundNode.id);
                     } else {
                         alert('Node not found');
                     }

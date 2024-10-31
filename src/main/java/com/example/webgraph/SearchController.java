@@ -1,11 +1,11 @@
 package com.example.webgraph;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -13,13 +13,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 public class SearchController {
 
+    @Autowired
+    private GoogleSearchService googleSearchService;
+
     @GetMapping("/search")
-    @ResponseBody
-    public ResponseEntity<Map<String, String>> search(@RequestParam String query) {
-        String result = fetchWikipediaIntroduction(query);
+    public ResponseEntity<Map<String, String>> search(@RequestParam String query, @RequestParam String source) {
+        String result;
+
+        switch (source.toLowerCase()) {
+            case "dbpedia":
+                result = fetchDBPediaIntroduction(query);
+                break;
+            case "google":
+                result = googleSearchService.search(query);
+                break;
+            case "wikipedia":
+            default:
+                result = fetchWikipediaIntroduction(query);
+                break;
+        }
+
         Map<String, String> response = new HashMap<>();
         response.put("extract", result);
         return ResponseEntity.ok(response);
@@ -40,6 +56,31 @@ public class SearchController {
             }
         } catch (RestClientException e) {
             return "Error: Unable to retrieve information from Wikipedia";
+        }
+    }
+
+    private String fetchDBPediaIntroduction(String query) {
+        String url = "https://dbpedia.org/data/" + query.replace(" ", "_") + ".json";
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response != null) {
+                String resourceKey = "http://dbpedia.org/resource/" + query.replace(" ", "_");
+                if (response.containsKey(resourceKey)) {
+                    Map<String, Object> resource = (Map<String, Object>) response.get(resourceKey);
+                    if (resource.containsKey("http://dbpedia.org/ontology/abstract")) {
+                        List<Map<String, Object>> abstracts = (List<Map<String, Object>>) resource.get("http://dbpedia.org/ontology/abstract");
+                        for (Map<String, Object> entry : abstracts) {
+                            if ("en".equals(entry.get("lang"))) {
+                                return (String) entry.get("value");
+                            }
+                        }
+                    }
+                }
+            }
+            return "No result found";
+        } catch (RestClientException e) {
+            return "Error: Unable to retrieve information from DBPedia";
         }
     }
 
