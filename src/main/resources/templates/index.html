@@ -273,7 +273,7 @@
                     .call(zoom.transform, d3.zoomIdentity.translate(width / 2 - d.x, height / 2 - d.y).scale(1));
 
                 document.getElementById('info').classList.add('active');
-                fetchContent(d.name || d.title || d.id);
+                fetchContent(d.searchText || d.name || d.id);
             }
 
             function fetchContent(query) {
@@ -307,7 +307,7 @@
                 if (query) {
                     const foundNode = nodes.find(d =>
                         (d.name && d.name.toLowerCase() === query) ||
-                        (d.title && d.title.toLowerCase() === query) ||
+                        (d.searchText && d.searchText.toLowerCase() === query) ||
                         d.id.toString() === query
                     );
 
@@ -321,7 +321,7 @@
 
                         // Abrir o painel de informações e exibir o conteúdo
                         document.getElementById('info').classList.add('active');
-                        fetchContent(foundNode.name || foundNode.title || foundNode.id);
+                        fetchContent(foundNode.searchText || foundNode.name || foundNode.title || foundNode.id);
                     } else {
                         alert('Node not found');
                     }

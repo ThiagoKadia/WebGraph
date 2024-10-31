@@ -59,6 +59,25 @@ public class SearchController {
         }
     }
 
+    private String fetchClosestWikipediaPage(String query) {
+        String searchUrl = "https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + query + "&format=json";
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            Map<String, Object> response = restTemplate.getForObject(searchUrl, Map.class);
+            if (response != null && response.containsKey("query")) {
+                Map<String, Object> queryMap = (Map<String, Object>) response.get("query");
+                List<Map<String, Object>> searchResults = (List<Map<String, Object>>) queryMap.get("search");
+                if (searchResults != null && !searchResults.isEmpty()) {
+                    String closestTitle = (String) searchResults.get(0).get("title");
+                    return fetchWikipediaIntroduction(closestTitle);
+                }
+            }
+            return "No result found";
+        } catch (RestClientException e) {
+            return "Error: Unable to perform search on Wikipedia";
+        }
+    }
+
     private String fetchDBPediaIntroduction(String query) {
         String url = "https://dbpedia.org/data/" + query.replace(" ", "_") + ".json";
         RestTemplate restTemplate = new RestTemplate();
@@ -81,25 +100,6 @@ public class SearchController {
             return "No result found";
         } catch (RestClientException e) {
             return "Error: Unable to retrieve information from DBPedia";
-        }
-    }
-
-    private String fetchClosestWikipediaPage(String query) {
-        String searchUrl = "https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + query + "&format=json";
-        RestTemplate restTemplate = new RestTemplate();
-        try {
-            Map<String, Object> response = restTemplate.getForObject(searchUrl, Map.class);
-            if (response != null && response.containsKey("query")) {
-                Map<String, Object> queryMap = (Map<String, Object>) response.get("query");
-                List<Map<String, Object>> searchResults = (List<Map<String, Object>>) queryMap.get("search");
-                if (searchResults != null && !searchResults.isEmpty()) {
-                    String closestTitle = (String) searchResults.get(0).get("title");
-                    return fetchWikipediaIntroduction(closestTitle);
-                }
-            }
-            return "No result found";
-        } catch (RestClientException e) {
-            return "Error: Unable to perform search on Wikipedia";
         }
     }
 
