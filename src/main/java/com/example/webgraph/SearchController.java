@@ -21,20 +21,11 @@ public class SearchController {
 
     @GetMapping("/search")
     public ResponseEntity<Map<String, String>> search(@RequestParam String query, @RequestParam String source) {
-        String result;
-
-        switch (source.toLowerCase()) {
-            case "dbpedia":
-                result = fetchDBPediaIntroduction(query);
-                break;
-            case "google":
-                result = googleSearchService.search(query);
-                break;
-            case "wikipedia":
-            default:
-                result = fetchWikipediaIntroduction(query);
-                break;
-        }
+        String result = switch (source.toLowerCase()) {
+            case "dbpedia" -> fetchDBPediaIntroduction(query);
+            case "google" -> googleSearchService.search(query);
+            default -> fetchWikipediaIntroduction(query);
+        };
 
         Map<String, String> response = new HashMap<>();
         response.put("extract", result);
