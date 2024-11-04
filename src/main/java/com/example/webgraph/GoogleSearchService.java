@@ -17,13 +17,12 @@ public class GoogleSearchService {
     private String cseId;
 
     public String search(String query) {
-        // Simula uma busca no Google padrão adicionando parâmetros de refinamento
         String url = "https://www.googleapis.com/customsearch/v1"
                 + "?key=" + apiKey
                 + "&cx=" + cseId
                 + "&q=" + query
-                + "&exactTerms=" + query  // Simula aspas em torno do termo da pesquisa
-                + "&num=5";  // Reduz o número de resultados para tornar o retorno mais preciso
+                + "&exactTerms=" + query
+                + "&num=5";
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -32,7 +31,6 @@ public class GoogleSearchService {
             if (response != null && response.containsKey("items")) {
                 List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
 
-                // Verifica os resultados para garantir que algum contenha o termo
                 for (Map<String, Object> item : items) {
                     String snippet = (String) item.get("snippet");
                     if (snippet != null) {
@@ -40,7 +38,6 @@ public class GoogleSearchService {
                     }
                 }
 
-                // Retorna o snippet do primeiro resultado como último recurso
                 return (String) items.get(0).get("snippet");
             }
             return "No result found";
