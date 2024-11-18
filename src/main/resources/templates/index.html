@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Generic Graph Visualization</title>
+    <title>WebGraph</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <style>
         body {
@@ -97,19 +97,19 @@
 <body>
 <div id="graph">
     <div id="search-container">
-        <input type="text" id="search-input" placeholder="Search for a node...">
+        <input type="text" id="search-input" placeholder="Pesquise por um nó...">
         <select id="search-source">
             <option value="wikipedia">Wikipedia</option>
             <option value="dbpedia">DBPedia</option>
             <option value="google">Google</option>
         </select>
-        <button id="search-btn">Search</button>
+        <button id="search-btn">Pesquisar</button>
     </div>
 </div>
 <div id="info">
-    <button id="close-btn">Close</button>
-    <h2>Node Information</h2>
-    <div id="wiki-content">Click on a node to see content.</div>
+    <button id="close-btn">Fechar</button>
+    <h2>Informação do Nó</h2>
+    <div id="wiki-content">Clique em um nó para ver o conteúdo.</div>
 </div>
 <div id="tooltip" style="position: absolute; opacity: 0;"></div>
 <script>
@@ -170,27 +170,23 @@
                 .enter()
                 .append("circle")
                 .attr("class", "node")
-                .attr("r", 15)
+                .attr("r", 30)
                 .style("fill", d => color(d.labels[0]))
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
                     .on("end", dragended))
                 .on("click", nodeClicked)
-
-                // Show tooltip on mouseover
                 .on("mouseover", function (event, d) {
                     d3.select("#tooltip")
                         .style("opacity", 1)
                         .html(d.searchText);
                 })
-                // Move tooltip with the mouse
                 .on("mousemove", function (event) {
                     d3.select("#tooltip")
                         .style("left", (event.pageX + 10) + "px")
                         .style("top", (event.pageY - 10) + "px");
                 })
-                // Hide tooltip on mouseout
                 .on("mouseout", function () {
                     d3.select("#tooltip")
                         .style("opacity", 0);
@@ -232,7 +228,7 @@
                     .attr("y", d => (d.source.y + d.target.y) / 2)
                     .attr("transform", d => {
                         const angle = calculateAngle(d.source.x, d.source.y, d.target.x, d.target.y);
-                        const correctedAngle = angle > 90 || angle < -90 ? angle + 180 : angle; // Corrige a rotação para evitar texto de ponta cabeça
+                        const correctedAngle = angle > 90 || angle < -90 ? angle + 180 : angle;
                         return `rotate(${correctedAngle}, ${(d.source.x + d.target.x) / 2}, ${(d.source.y + d.target.y) / 2})`;
                     });
 
@@ -314,12 +310,10 @@
                     if (foundNode) {
                         node.classed("selected", d => d === foundNode);
 
-                        // Centraliza e destaca o nó encontrado
                         svg.transition()
                             .duration(500)
                             .call(zoom.transform, d3.zoomIdentity.translate(width / 2 - foundNode.x, height / 2 - foundNode.y).scale(1));
 
-                        // Abrir o painel de informações e exibir o conteúdo
                         document.getElementById('info').classList.add('active');
                         fetchContent(foundNode.searchText || foundNode.name || foundNode.title || foundNode.id);
                     } else {
