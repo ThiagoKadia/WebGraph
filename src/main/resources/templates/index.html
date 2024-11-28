@@ -199,7 +199,7 @@
                 .enter()
                 .append("text")
                 .attr("class", "link-label")
-                .attr("dy", (d, i) => i % 2 === 0 ? "-0.6em" : "1.2em") // Alterna entre acima e abaixo da linha
+                .attr("dy", (d, i) => i % 2 === 0 ? "-0.6em" : "1.2em")
                 .attr("text-anchor", "middle")
                 .text(d => d.type);
 
@@ -236,7 +236,7 @@
             nodes.forEach(node => {
                 node.labels.forEach(label => {
                     if (!colorMap.has(label)) {
-                        colorMap.set(label, color(label)); // Use the D3 color scale
+                        colorMap.set(label, color(label));
                     }
                 });
             });
@@ -253,7 +253,7 @@
             });
 
             function renderLegend() {
-                legendList.innerHTML = ''; // Clear existing items
+                legendList.innerHTML = '';
                 colorMap.forEach((color, label) => {
                     const listItem = document.createElement('li');
                     const colorBox = document.createElement('div');
@@ -352,11 +352,11 @@
                 fetch(`/search?query=${query}&source=${source}`)
                     .then(response => response.json())
                     .then(data => {
-                        document.getElementById('wiki-content').innerHTML = data.extract || "No content found.";
+                        document.getElementById('wiki-content').innerHTML = data.extract || "Nenhum conteúdo encontrado.";
                     })
                     .catch(error => {
-                        document.getElementById('wiki-content').innerHTML = "Error fetching content.";
-                        console.error('Error fetching content:', error);
+                        document.getElementById('wiki-content').innerHTML = "Erro ao buscar conteúdo.";
+                        console.error('Erro ao buscar conteúdo:', error);
                     });
             }
 
@@ -392,7 +392,7 @@
                         document.getElementById('info').classList.add('active');
                         fetchContent(foundNode.searchText || foundNode.name || foundNode.title || foundNode.id);
                     } else {
-                        alert('Node not found');
+                        alert('Nó não encontrado');
                     }
                 }
             });

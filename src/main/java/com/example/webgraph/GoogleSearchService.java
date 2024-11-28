@@ -40,9 +40,9 @@ public class GoogleSearchService {
 
                 return (String) items.get(0).get("snippet");
             }
-            return "No result found";
+            return "Nenhum resultado encontrado";
         } catch (Exception e) {
-            return "Error: Unable to retrieve information from Google";
+            return "Erro: Não foi possível recuperar informações do Google";
         }
     }
 }
