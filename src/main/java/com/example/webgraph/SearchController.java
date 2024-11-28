@@ -43,10 +43,10 @@ public class SearchController {
             } else if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                 return fetchClosestWikipediaPage(query);
             } else {
-                return "Error: Unexpected response from Wikipedia";
+                return "Erro: Resposta inesperada da Wikipédia";
             }
         } catch (RestClientException e) {
-            return "Error: Unable to retrieve information from Wikipedia";
+            return "Erro: Não foi possível recuperar informações da Wikipédia";
         }
     }
 
@@ -63,9 +63,9 @@ public class SearchController {
                     return fetchWikipediaIntroduction(closestTitle);
                 }
             }
-            return "No result found";
+            return "Nenhum resultado encontrado";
         } catch (RestClientException e) {
-            return "Error: Unable to perform search on Wikipedia";
+            return "Erro: Não foi possível realizar a pesquisa na Wikipédia";
         }
     }
 
@@ -88,9 +88,9 @@ public class SearchController {
                     }
                 }
             }
-            return "No result found";
+            return "Nenhum resultado encontrado";
         } catch (RestClientException e) {
-            return "Error: Unable to retrieve information from DBPedia";
+            return "Erro: Não foi possível recuperar informações do DBpedia";
         }
     }
 
